@@ -53,7 +53,7 @@ export default function Footer({ apiData }) {
               Environment & Status
             </h4>
             <div className="space-y-1 font-mono text-[11px] text-slate-400">
-              <p>Phase: <span className="text-blue-400">Phase 1 Foundation</span></p>
+              <p>Phase: <span className="text-blue-400">Phase 2 Ingestion & Extraction</span></p>
               <p>Frontend: <span className="text-slate-300">React + Vite + Tailwind</span></p>
               <p>Backend: <span className="text-slate-300">FastAPI + Python</span></p>
               {apiData?.version && (

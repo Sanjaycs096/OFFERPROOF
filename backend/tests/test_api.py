@@ -32,7 +32,7 @@ async def run_tests():
         health_data = res_health.json()
         assert health_data["status"] == "ok"
         assert health_data["service"] == "offerproof-api"
-        assert health_data["version"] == "0.1.0"
+        assert health_data["version"] == "0.2.0"
         assert "timestamp" in health_data
 
         # Test CORS Preflight
