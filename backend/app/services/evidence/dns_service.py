@@ -216,3 +216,4 @@ class DNSIntelligenceProvider(BaseEvidenceProvider):
         except Exception as e:
             logger.info(f"DoH query for '{hostname}' type {rtype} failed: {type(e).__name__}")
             return []
+

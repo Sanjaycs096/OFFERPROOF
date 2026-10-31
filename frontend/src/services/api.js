@@ -197,7 +197,38 @@ export async function verifyClaims(payload) {
 }
 
 /**
- * Convenience method to extract and verify in a single step (Phase 3).
+ * Generates an explainable assessment report from verification data (Phase 4).
+ * @param {object} payload
+ */
+export async function assessOpportunity(payload) {
+  try {
+    const response = await fetch(`${API_BASE_URL}/api/v1/assess`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+      },
+      body: JSON.stringify(payload),
+    });
+
+    const data = await response.json();
+    if (!response.ok) {
+      return {
+        success: false,
+        error: data.detail || `Assessment failed with status ${response.status}`,
+      };
+    }
+    return { success: true, data };
+  } catch (err) {
+    return {
+      success: false,
+      error: err instanceof Error ? err.message : 'Failed to reach assessment endpoint',
+    };
+  }
+}
+
+/**
+ * Convenience method to extract, verify, and assess in a single unified step (Phase 4).
  * @param {{ content: string, source_type?: string, application_url?: string, force_mode?: string }} payload
  */
 export async function analyzeOpportunity(payload) {

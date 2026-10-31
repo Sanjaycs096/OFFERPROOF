@@ -15,7 +15,7 @@ import {
   Loader2,
   Cpu,
 } from 'lucide-react';
-import { ingestPdf, ingestText, extractClaims, verifyClaims } from '../services/api';
+import { ingestPdf, ingestText, extractClaims, verifyClaims, assessOpportunity } from '../services/api';
 import ExtractionResults from './ExtractionResults';
 
 const MAX_PDF_SIZE_BYTES = 5 * 1024 * 1024; // 5 MB
@@ -164,14 +164,42 @@ export default function SubmissionForm({ isOnline }) {
       });
 
       if (verifyRes.success) {
-        setExtractionResult({
-          ...extractRes.data,
-          verification_summary: verifyRes.data.verification_summary,
+        // 4. Perform Explainable Assessment & Safety Guidance (Phase 4)
+        setLoadingStep('Synthesizing evidence & generating safety assessment...');
+        const assessRes = await assessOpportunity({
+          extracted_information: extractRes.data.extracted_information,
           claims: verifyRes.data.claims,
           evidence: verifyRes.data.evidence,
           technical_observations: verifyRes.data.technical_observations,
+          verification_summary: verifyRes.data.verification_summary,
           limitations: verifyRes.data.limitations,
         });
+
+        if (assessRes.success) {
+          setExtractionResult({
+            ...extractRes.data,
+            verification_summary: verifyRes.data.verification_summary,
+            claims: verifyRes.data.claims,
+            evidence: verifyRes.data.evidence,
+            technical_observations: verifyRes.data.technical_observations,
+            limitations: assessRes.data.limitations || verifyRes.data.limitations,
+            assessment: assessRes.data.assessment,
+            findings: assessRes.data.findings,
+            recommendations: assessRes.data.recommendations,
+            verified_facts: assessRes.data.verified_facts,
+            unverified_claims: assessRes.data.unverified_claims,
+            next_steps: assessRes.data.next_steps,
+          });
+        } else {
+          setExtractionResult({
+            ...extractRes.data,
+            verification_summary: verifyRes.data.verification_summary,
+            claims: verifyRes.data.claims,
+            evidence: verifyRes.data.evidence,
+            technical_observations: verifyRes.data.technical_observations,
+            limitations: verifyRes.data.limitations,
+          });
+        }
       } else {
         // Fallback to extraction output if verification encountered non-fatal issues
         setExtractionResult(extractRes.data);
@@ -212,14 +240,14 @@ export default function SubmissionForm({ isOnline }) {
                 Opportunity Ingestion
               </span>
               <span className="px-2 py-0.5 rounded text-[10px] uppercase font-mono font-bold bg-blue-950 border border-blue-800 text-blue-300">
-                Phase 3 Evidence Engine
+                Phase 4 Assessment Engine
               </span>
             </div>
             <h2 className="text-2xl sm:text-3xl font-bold text-white mt-1">
-              Ingest & Extract Opportunity Claims
+              Ingest, Verify & Assess Opportunities
             </h2>
             <p className="text-sm text-slate-400 mt-1">
-              Paste offer text, upload offer PDFs, or provide links for structured entity and claim extraction.
+              Paste offer text, upload offer PDFs, or provide links for structured claims, technical evidence, and explainable safety guidance.
             </p>
           </div>
 

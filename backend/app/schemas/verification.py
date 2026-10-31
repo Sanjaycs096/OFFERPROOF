@@ -56,3 +56,4 @@ class AnalyzeRequest(BaseModel):
     force_mode: Optional[str] = Field(
         None, description="Optional extraction override: 'ai' or 'rule_based'"
     )
+

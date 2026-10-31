@@ -10,6 +10,7 @@ from app.schemas.verification import (
     VerificationSummary,
     AnalyzeRequest,
 )
+from app.schemas.assessment import AnalysisResponse
 from app.services.evidence import (
     VerificationContext,
     BaseEvidenceProvider,
@@ -91,10 +92,11 @@ class VerificationService:
             extracted_information=request.extracted_information,
         )
 
-    async def analyze(self, request: AnalyzeRequest) -> VerificationResponse:
+    async def analyze(self, request: AnalyzeRequest) -> AnalysisResponse:
         """
         Convenience workflow: runs Phase 2 claim extraction first,
-        followed immediately by Phase 3 evidence verification.
+        followed by Phase 3 evidence verification, and Phase 4 explainable assessment.
+        Returns the unified AnalysisResponse.
         """
         extract_req = ExtractionRequest(
             content=request.content,
@@ -110,7 +112,33 @@ class VerificationService:
             source_type=extraction_res.source_type,
             application_url=request.application_url,
         )
-        return await self.verify(verify_req)
+        verification_res = await self.verify(verify_req)
+
+        from app.services.assessment_service import assessment_service
+        report = assessment_service.generate_assessment(
+            extracted_info=verification_res.extracted_information,
+            claims=verification_res.claims,
+            evidence=verification_res.evidence,
+            observations=verification_res.technical_observations,
+            verification_summary=verification_res.verification_summary,
+            limitations=verification_res.limitations,
+        )
+
+        return AnalysisResponse(
+            success=verification_res.success,
+            verification_summary=verification_res.verification_summary,
+            claims=verification_res.claims,
+            evidence=verification_res.evidence,
+            technical_observations=verification_res.technical_observations,
+            limitations=report.limitations,
+            extracted_information=verification_res.extracted_information,
+            assessment=report.assessment,
+            findings=report.findings,
+            recommendations=report.recommendations,
+            verified_facts=report.verified_facts,
+            unverified_claims=report.unverified_claims,
+            next_steps=report.next_steps,
+        )
 
     def _map_evidence_to_claims(
         self,
@@ -264,3 +292,4 @@ class VerificationService:
 
 
 verification_service = VerificationService()
+

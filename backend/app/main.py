@@ -12,8 +12,8 @@ load_dotenv()
 
 app = FastAPI(
     title="OFFERPROOF API",
-    description="Backend API for OFFERPROOF: Ingestion, claim extraction, and independent evidence verification for job and internship offers.",
-    version="0.3.0",
+    description="Backend API for OFFERPROOF: Ingestion, claim extraction, independent evidence verification, and explainable safety assessments.",
+    version="0.4.0",
     docs_url="/docs",
     redoc_url="/redoc",
 )
@@ -57,7 +57,7 @@ def root_info() -> RootResponse:
     return RootResponse(
         message="OFFERPROOF API is active and ready.",
         tagline="Don't trust the offer. Verify the evidence.",
-        version="0.3.0",
+        version="0.4.0",
         docs_url="/docs",
         health_url="/health",
     )

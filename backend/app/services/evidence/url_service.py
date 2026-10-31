@@ -174,3 +174,4 @@ class URLConsistencyProvider(BaseEvidenceProvider):
         )
 
         return evidence_list, observations
+

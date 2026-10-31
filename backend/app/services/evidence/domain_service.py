@@ -267,3 +267,4 @@ class DomainIntelligenceProvider(BaseEvidenceProvider):
         )
 
         return evidence, observation
+

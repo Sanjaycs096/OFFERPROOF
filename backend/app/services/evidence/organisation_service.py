@@ -171,3 +171,4 @@ class OrganisationIdentityConsistencyProvider(BaseEvidenceProvider):
         )
 
         return evidence_list, observations
+

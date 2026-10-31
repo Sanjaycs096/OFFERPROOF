@@ -43,3 +43,4 @@ class TechnicalObservation(BaseModel):
     severity: Literal["neutral", "informational", "notable"] = Field(
         "informational", description="Significance level of the observation"
     )
+

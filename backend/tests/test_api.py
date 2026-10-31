@@ -23,7 +23,7 @@ async def run_tests():
         assert root_data["tagline"] == "Don't trust the offer. Verify the evidence."
         assert root_data["health_url"] == "/health"
         assert root_data["docs_url"] == "/docs"
-        assert root_data["version"] == "0.3.0"
+        assert root_data["version"] == "0.4.0"
 
         # Test Health Endpoint
         res_health = await client.get("/health")
@@ -33,7 +33,7 @@ async def run_tests():
         health_data = res_health.json()
         assert health_data["status"] == "ok"
         assert health_data["service"] == "offerproof-api"
-        assert health_data["version"] == "0.3.0"
+        assert health_data["version"] == "0.4.0"
         assert "timestamp" in health_data
 
         # Test CORS Preflight
@@ -90,7 +90,31 @@ async def run_tests():
         assert len(v_data["evidence"]) >= 3
         print("\n[PASS] POST /api/v1/verify passed.")
 
-        # Test POST /api/v1/analyze
+        # Test POST /api/v1/assess
+        assess_payload = {
+            "extracted_information": v_data["extracted_information"],
+            "claims": v_data["claims"],
+            "evidence": v_data["evidence"],
+            "technical_observations": v_data["technical_observations"],
+            "verification_summary": v_data["verification_summary"],
+            "limitations": v_data["limitations"],
+        }
+        res_assess = await client.post("/api/v1/assess", json=assess_payload)
+        assert res_assess.status_code == 200
+        assess_data = res_assess.json()
+        assert assess_data["success"] is True
+        assert "assessment" in assess_data
+        assert assess_data["assessment"]["assessment_level"] in [
+            "high_caution",
+            "needs_careful_review",
+            "limited_concerns_detected",
+            "insufficient_evidence",
+        ]
+        assert len(assess_data["next_steps"]) >= 1
+        assert len(assess_data["unverified_claims"]) >= 1
+        print("[PASS] POST /api/v1/assess passed.")
+
+        # Test POST /api/v1/analyze (End-to-End Ingest + Extract + Verify + Assess)
         analyze_payload = {
             "content": "Data Analyst role at Nexus Technologies. Earn ₹50,000 per month. Contact hr@nexus.example.com. Apply at https://nexus.example.com/apply",
             "source_type": "text",
@@ -102,9 +126,17 @@ async def run_tests():
         a_data = res_a.json()
         assert a_data["success"] is True
         assert a_data["verification_summary"]["total_claims"] >= 3
-        print("[PASS] POST /api/v1/analyze passed.")
+        # Phase 4 Assessment assertions on /analyze response
+        assert "assessment" in a_data
+        assert "assessment_level" in a_data["assessment"]
+        assert "findings" in a_data
+        assert "recommendations" in a_data
+        assert "verified_facts" in a_data
+        assert "unverified_claims" in a_data
+        assert "next_steps" in a_data
+        print("[PASS] POST /api/v1/analyze (with Phase 4 assessment) passed.")
 
-    print("\n[PASS] ALL BACKEND TESTS PASSED SUCCESSFULLY!")
+    print("\n[PASS] ALL API ENDPOINT TESTS PASSED SUCCESSFULLY!")
 
 
 if __name__ == "__main__":

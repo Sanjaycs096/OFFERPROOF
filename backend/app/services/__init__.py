@@ -27,6 +27,8 @@ from app.services.evidence import (
     OrganisationIdentityConsistencyProvider,
 )
 from app.services.verification_service import VerificationService, verification_service
+from app.services.recommendation_service import RecommendationService, recommendation_service
+from app.services.assessment_service import AssessmentService, assessment_service
 
 __all__ = [
     "check_health",
@@ -57,4 +59,8 @@ __all__ = [
     "OrganisationIdentityConsistencyProvider",
     "VerificationService",
     "verification_service",
+    "RecommendationService",
+    "recommendation_service",
+    "AssessmentService",
+    "assessment_service",
 ]

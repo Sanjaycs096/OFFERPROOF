@@ -29,6 +29,20 @@ from app.schemas.verification import (
     VerificationResponse,
     AnalyzeRequest,
 )
+from app.schemas.assessment import (
+    AssessmentLevel,
+    FindingSeverity,
+    AssessmentFinding,
+    SafetyRecommendation,
+    VerifiedFact,
+    UnverifiedClaim,
+    NextStepItem,
+    AssessmentOverview,
+    AssessmentReport,
+    AssessmentRequest,
+    AssessmentResponse,
+    AnalysisResponse,
+)
 
 __all__ = [
     "HealthResponse",
@@ -55,4 +69,16 @@ __all__ = [
     "VerificationRequest",
     "VerificationResponse",
     "AnalyzeRequest",
+    "AssessmentLevel",
+    "FindingSeverity",
+    "AssessmentFinding",
+    "SafetyRecommendation",
+    "VerifiedFact",
+    "UnverifiedClaim",
+    "NextStepItem",
+    "AssessmentOverview",
+    "AssessmentReport",
+    "AssessmentRequest",
+    "AssessmentResponse",
+    "AnalysisResponse",
 ]

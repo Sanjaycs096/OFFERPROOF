@@ -37,6 +37,8 @@ def api_v1_health():
             "claim_extraction": True,
             "rule_based_fallback": True,
             "evidence_verification": True,
+            "explainable_assessment": True,
+            "safety_recommendations": True,
             "rdap_intelligence": True,
             "dns_over_https": True,
             "email_domain_consistency": True,

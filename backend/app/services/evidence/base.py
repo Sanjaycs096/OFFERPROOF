@@ -178,3 +178,4 @@ class BaseEvidenceProvider(ABC):
     ) -> Tuple[List[EvidenceItem], List[TechnicalObservation]]:
         """Collects evidence items and technical observations."""
         pass
+

@@ -119,8 +119,36 @@ def test_live_server():
             assert len(data["evidence"]) >= 3
             assert data["verification_summary"]["not_checked"] >= 1
             print(f"[PASS] HTTP Live Server POST /api/v1/verify: Processed {len(data['evidence'])} evidence items.")
+            verify_result = data
 
-        print("\n[SUCCESS] Live Uvicorn server successfully handled Phase 1, Phase 2, and Phase 3 endpoints over HTTP!")
+        # 7. Test Explainable Assessment via HTTP POST (Phase 4)
+        assess_payload = json.dumps({
+            "extracted_information": verify_result["extracted_information"],
+            "claims": verify_result["claims"],
+            "evidence": verify_result["evidence"],
+            "technical_observations": verify_result["technical_observations"],
+            "verification_summary": verify_result["verification_summary"],
+            "limitations": verify_result["limitations"],
+        }).encode("utf-8")
+        req_assess = urllib.request.Request(
+            "http://127.0.0.1:8000/api/v1/assess",
+            data=assess_payload,
+            headers={"Content-Type": "application/json"}
+        )
+        with urllib.request.urlopen(req_assess, timeout=8) as res:
+            assert res.status == 200
+            data = json.loads(res.read().decode())
+            assert data["success"] is True
+            assert "assessment" in data
+            assert data["assessment"]["assessment_level"] in [
+                "high_caution",
+                "needs_careful_review",
+                "limited_concerns_detected",
+                "insufficient_evidence",
+            ]
+            print(f"[PASS] HTTP Live Server POST /api/v1/assess: Assessment level '{data['assessment']['assessment_label']}' with {len(data['findings'])} findings and {len(data['next_steps'])} next steps.")
+
+        print("\n[SUCCESS] Live Uvicorn server successfully handled Phase 1, Phase 2, Phase 3, and Phase 4 endpoints over HTTP!")
     finally:
         print("Stopping uvicorn server...")
         proc.terminate()

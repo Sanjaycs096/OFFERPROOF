@@ -163,3 +163,4 @@ class EmailDomainConsistencyProvider(BaseEvidenceProvider):
         )
 
         return evidence_list, observations
+
