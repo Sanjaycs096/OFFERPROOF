@@ -6,7 +6,9 @@ OFFERPROOF is an AI-assisted, evidence-grounded opportunity verification platfor
 
 - **Live Demonstration Repository:** [https://github.com/Sanjaycs096/OFFERPROOF.git](https://github.com/Sanjaycs096/OFFERPROOF.git)
 - **Current Hardened Version:** `v0.5.0`
-- **Hackathon Materials:** See [`HACKATHON_SUBMISSION.md`](HACKATHON_SUBMISSION.md) for 60-second pitch, 3-minute demo script, judge technical guide, and innovation statements.
+- **Hackathon & Presentation Materials:**
+  - [`DEMO_PRESENTATION_SCRIPT.md`](DEMO_PRESENTATION_SCRIPT.md): Complete presentation kit with 60s pitch, 3-min timed walkthrough, 14 judge technical Q&As, backup plan, and pre-flight checklist.
+  - [`HACKATHON_SUBMISSION.md`](HACKATHON_SUBMISSION.md): Submission overview, competitive differentiation matrix, and student impact statements.
 
 ---
 
@@ -186,7 +188,38 @@ Interactive API documentation is available at `http://localhost:8000/docs` (Swag
 - [Python](https://www.python.org/) (v3.10 or higher recommended)
 - [Git](https://git-scm.com/)
 
-### 1. Clone & Set Up Backend
+### Quick Demo Launch (Windows)
+
+For judges, evaluators, and testers on Windows, launch the entire application with one command:
+
+```cmd
+run_demo.bat
+```
+
+This automated launcher will:
+1. Verify system prerequisites (`python`, `node`, `npm`).
+2. Automatically create the Python virtual environment (`backend\.venv`) and install dependencies if needed.
+3. Automatically install frontend `node_modules` if needed.
+4. Start the FastAPI backend on `http://127.0.0.1:8000` in a dedicated terminal window.
+5. Start the Vite frontend on `http://localhost:5173` in a dedicated terminal window.
+6. Open `http://localhost:5173` in your default web browser after initialization.
+
+**Local Endpoints:**
+- **Frontend Dashboard:** [http://localhost:5173](http://localhost:5173)
+- **Backend Swagger API Docs:** [http://127.0.0.1:8000/docs](http://127.0.0.1:8000/docs)
+- **Backend Health Check:** [http://127.0.0.1:8000/api/v1/health](http://127.0.0.1:8000/api/v1/health)
+
+**How to Stop Services:**
+- Close the two opened terminal windows (`OFFERPROOF - Backend API` and `OFFERPROOF - Frontend Web UI`) or press `Ctrl+C` in each window.
+
+**Live Presentation & Judge Q&A Guide:**
+- Review [`DEMO_PRESENTATION_SCRIPT.md`](DEMO_PRESENTATION_SCRIPT.md) for the 60-second pitch, 3-minute timed live walkthrough, technical explanation, 14 judge technical Q&As, and pre-flight checklist.
+
+---
+
+### Manual Setup (Cross-Platform)
+
+#### 1. Clone & Set Up Backend
 ```bash
 git clone https://github.com/Sanjaycs096/OFFERPROOF.git
 cd OFFERPROOF/backend

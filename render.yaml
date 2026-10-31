@@ -13,3 +13,4 @@ services:
         value: "*"
       - key: AI_PROVIDER
         value: none
+

@@ -109,3 +109,4 @@
 - **Financial Loss Prevention:** Protects students from paying upfront "equipment deposits", "visa fees", or "training registration fees" that account for millions in annual student recruitment losses.
 - **Identity Theft Mitigation:** Informs job seekers when not to disclose Social Security Numbers, bank credentials, or passport scans.
 - **Empowered Due Diligence:** Equips career counseling centers, universities, and students with transparent, verifiable inspection scorecards that can be saved as vector PDF documents.
+
