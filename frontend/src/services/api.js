@@ -135,7 +135,7 @@ export async function ingestPdf(file, url) {
 }
 
 /**
- * Extracts entities, claims, and suspicious indicators from ingested text.
+ * Extracts entities, claims, and suspicious indicators from ingested text (Phase 2).
  * @param {{ content: string, source_type?: string, application_url?: string, force_mode?: string }} payload
  */
 export async function extractClaims(payload) {
@@ -154,6 +154,68 @@ export async function extractClaims(payload) {
       return {
         success: false,
         error: data.detail || `Extraction failed with status ${response.status}`,
+      };
+    }
+    return { success: true, data };
+  } catch (err) {
+    return {
+      success: false,
+      error: err instanceof Error ? err.message : 'Network request failed',
+    };
+  }
+}
+
+/**
+ * Verifies extracted claims against independent technical evidence (Phase 3).
+ * @param {{ extracted_information: object, claims: Array, source_type?: string, application_url?: string }} payload
+ */
+export async function verifyClaims(payload) {
+  try {
+    const response = await fetch(`${API_BASE_URL}/api/v1/verify`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+      },
+      body: JSON.stringify(payload),
+    });
+
+    const data = await response.json();
+    if (!response.ok) {
+      return {
+        success: false,
+        error: data.detail || `Verification failed with status ${response.status}`,
+      };
+    }
+    return { success: true, data };
+  } catch (err) {
+    return {
+      success: false,
+      error: err instanceof Error ? err.message : 'Failed to reach verification endpoint',
+    };
+  }
+}
+
+/**
+ * Convenience method to extract and verify in a single step (Phase 3).
+ * @param {{ content: string, source_type?: string, application_url?: string, force_mode?: string }} payload
+ */
+export async function analyzeOpportunity(payload) {
+  try {
+    const response = await fetch(`${API_BASE_URL}/api/v1/analyze`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+      },
+      body: JSON.stringify(payload),
+    });
+
+    const data = await response.json();
+    if (!response.ok) {
+      return {
+        success: false,
+        error: data.detail || `Analysis failed with status ${response.status}`,
       };
     }
     return { success: true, data };

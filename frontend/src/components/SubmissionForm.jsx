@@ -15,7 +15,7 @@ import {
   Loader2,
   Cpu,
 } from 'lucide-react';
-import { ingestPdf, ingestText, extractClaims } from '../services/api';
+import { ingestPdf, ingestText, extractClaims, verifyClaims } from '../services/api';
 import ExtractionResults from './ExtractionResults';
 
 const MAX_PDF_SIZE_BYTES = 5 * 1024 * 1024; // 5 MB
@@ -154,7 +154,28 @@ export default function SubmissionForm({ isOnline }) {
         throw new Error(extractRes.error || 'Claim extraction failed.');
       }
 
-      setExtractionResult(extractRes.data);
+      // 3. Perform Evidence Verification (Phase 3)
+      setLoadingStep('Collecting independent technical evidence & cross-referencing...');
+      const verifyRes = await verifyClaims({
+        extracted_information: extractRes.data.extracted_information,
+        claims: extractRes.data.claims,
+        source_type: sourceType,
+        application_url: opportunityUrl.trim() || undefined,
+      });
+
+      if (verifyRes.success) {
+        setExtractionResult({
+          ...extractRes.data,
+          verification_summary: verifyRes.data.verification_summary,
+          claims: verifyRes.data.claims,
+          evidence: verifyRes.data.evidence,
+          technical_observations: verifyRes.data.technical_observations,
+          limitations: verifyRes.data.limitations,
+        });
+      } else {
+        // Fallback to extraction output if verification encountered non-fatal issues
+        setExtractionResult(extractRes.data);
+      }
 
       // Scroll smoothly to results
       setTimeout(() => {
@@ -191,7 +212,7 @@ export default function SubmissionForm({ isOnline }) {
                 Opportunity Ingestion
               </span>
               <span className="px-2 py-0.5 rounded text-[10px] uppercase font-mono font-bold bg-blue-950 border border-blue-800 text-blue-300">
-                Phase 2 Engine Active
+                Phase 3 Evidence Engine
               </span>
             </div>
             <h2 className="text-2xl sm:text-3xl font-bold text-white mt-1">

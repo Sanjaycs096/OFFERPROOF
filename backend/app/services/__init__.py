@@ -14,6 +14,19 @@ from app.services.ai_service import (
     get_ai_provider,
 )
 from app.services.extraction_service import ExtractionService, extraction_service
+from app.services.evidence import (
+    BaseEvidenceProvider,
+    VerificationContext,
+    normalize_hostname,
+    is_safe_public_hostname,
+    extract_registrable_domain,
+    DomainIntelligenceProvider,
+    DNSIntelligenceProvider,
+    EmailDomainConsistencyProvider,
+    URLConsistencyProvider,
+    OrganisationIdentityConsistencyProvider,
+)
+from app.services.verification_service import VerificationService, verification_service
 
 __all__ = [
     "check_health",
@@ -32,4 +45,16 @@ __all__ = [
     "get_ai_provider",
     "ExtractionService",
     "extraction_service",
+    "BaseEvidenceProvider",
+    "VerificationContext",
+    "normalize_hostname",
+    "is_safe_public_hostname",
+    "extract_registrable_domain",
+    "DomainIntelligenceProvider",
+    "DNSIntelligenceProvider",
+    "EmailDomainConsistencyProvider",
+    "URLConsistencyProvider",
+    "OrganisationIdentityConsistencyProvider",
+    "VerificationService",
+    "verification_service",
 ]

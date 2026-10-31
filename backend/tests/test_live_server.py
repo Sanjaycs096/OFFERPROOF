@@ -77,7 +77,50 @@ def test_live_server():
                 assert c["verification_status"] == "not_checked"
             print(f"[PASS] HTTP Live Server POST /api/v1/extract: Extracted {len(data['claims'])} claims, all marked 'not_checked'.")
 
-        print("\n[SUCCESS] Live Uvicorn server successfully handled Phase 1 and Phase 2 endpoints over HTTP!")
+        # 6. Test Evidence Verification via HTTP POST (Phase 3)
+        verify_payload = json.dumps({
+            "extracted_information": {
+                "organisation": {"name": "ABC Technologies", "website": "https://abctech.example.com"},
+                "opportunity": {"role": "Data Science Internship"},
+                "financial_details": {"stipend": "₹45,000 per month", "registration_fees": "₹1,500"},
+                "recruiter": {"email": "recruiter@gmail.com"},
+                "application": {"application_url": "https://abctech.example.com/apply"}
+            },
+            "claims": [
+                {
+                    "claim_id": "CLM-001",
+                    "claim_text": "Organisation claims to be ABC Technologies.",
+                    "claim_category": "organisation",
+                    "source_text": "ABC Technologies",
+                    "confidence": 0.9,
+                    "verification_status": "not_checked"
+                },
+                {
+                    "claim_id": "CLM-002",
+                    "claim_text": "Advertised monthly stipend is ₹45,000 per month.",
+                    "claim_category": "financial",
+                    "source_text": "₹45,000 per month",
+                    "confidence": 0.9,
+                    "verification_status": "not_checked"
+                }
+            ],
+            "source_type": "text",
+            "application_url": "https://abctech.example.com/apply"
+        }).encode("utf-8")
+        req_verify = urllib.request.Request(
+            "http://127.0.0.1:8000/api/v1/verify",
+            data=verify_payload,
+            headers={"Content-Type": "application/json"}
+        )
+        with urllib.request.urlopen(req_verify, timeout=8) as res:
+            assert res.status == 200
+            data = json.loads(res.read().decode())
+            assert data["success"] is True
+            assert len(data["evidence"]) >= 3
+            assert data["verification_summary"]["not_checked"] >= 1
+            print(f"[PASS] HTTP Live Server POST /api/v1/verify: Processed {len(data['evidence'])} evidence items.")
+
+        print("\n[SUCCESS] Live Uvicorn server successfully handled Phase 1, Phase 2, and Phase 3 endpoints over HTTP!")
     finally:
         print("Stopping uvicorn server...")
         proc.terminate()

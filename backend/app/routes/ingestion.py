@@ -25,7 +25,7 @@ router = APIRouter(prefix="/api/v1", tags=["Ingestion & Extraction"])
 @router.get("/health", summary="API v1 Health & Capabilities")
 def api_v1_health():
     """
-    Returns API v1 system status, ingestion capability flags, and AI provider status.
+    Returns API v1 system status, ingestion capability flags, evidence verification status, and AI provider status.
     """
     ai_provider = get_ai_provider()
     return {
@@ -36,6 +36,10 @@ def api_v1_health():
             "pdf_ingestion": True,
             "claim_extraction": True,
             "rule_based_fallback": True,
+            "evidence_verification": True,
+            "rdap_intelligence": True,
+            "dns_over_https": True,
+            "email_domain_consistency": True,
             "ai_extraction_configured": ai_provider.is_configured,
             "ai_provider": ai_provider.provider_name if ai_provider.is_configured else "none",
         },

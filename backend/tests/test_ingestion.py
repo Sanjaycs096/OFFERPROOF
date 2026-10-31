@@ -26,7 +26,7 @@ async def run_ingestion_api_tests():
         # 1. Test Phase 1 Root & Health preservation
         res_root = await client.get("/")
         assert res_root.status_code == 200
-        assert res_root.json()["version"] == "0.2.0"
+        assert res_root.json()["version"] == "0.3.0"
         print("[PASS] GET / preserved.")
 
         res_h = await client.get("/health")

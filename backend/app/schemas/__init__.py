@@ -18,6 +18,17 @@ from app.schemas.extraction import (
     ExtractionRequest,
     ExtractionResponse,
 )
+from app.schemas.evidence import (
+    EvidenceItem,
+    TechnicalObservation,
+    EvidenceStatus,
+)
+from app.schemas.verification import (
+    VerificationSummary,
+    VerificationRequest,
+    VerificationResponse,
+    AnalyzeRequest,
+)
 
 __all__ = [
     "HealthResponse",
@@ -37,4 +48,11 @@ __all__ = [
     "ExtractionSummary",
     "ExtractionRequest",
     "ExtractionResponse",
+    "EvidenceItem",
+    "TechnicalObservation",
+    "EvidenceStatus",
+    "VerificationSummary",
+    "VerificationRequest",
+    "VerificationResponse",
+    "AnalyzeRequest",
 ]

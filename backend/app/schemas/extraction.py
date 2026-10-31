@@ -88,9 +88,17 @@ class ClaimItem(BaseModel):
     confidence: float = Field(
         0.8, ge=0.0, le=1.0, description="Extraction confidence score from 0.0 to 1.0"
     )
-    verification_status: Literal["not_checked"] = Field(
+    verification_status: Literal["supported", "contradicted", "inconclusive", "not_checked"] = Field(
         "not_checked",
-        description="Verification state. Strictly 'not_checked' in Phase 2 ingestion",
+        description="Verification state: supported, contradicted, inconclusive, or not_checked",
+    )
+    evidence_ids: List[str] = Field(
+        default_factory=list,
+        description="IDs of evidence items associated with this claim (e.g. EVD-001)",
+    )
+    verification_explanation: Optional[str] = Field(
+        None,
+        description="Plain-language explanation of the evidence basis for the verification status",
     )
 
 

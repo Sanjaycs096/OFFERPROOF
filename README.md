@@ -18,14 +18,17 @@ OFFERPROOF bridges this gap by grounding every verification assessment in extern
 
 ---
 
-## Current Status: Phase 2 — Ingestion & Claim Extraction
+## Current Status: Phase 3 — Independent Evidence Verification & Source Intelligence
 
-Phase 2 introduces the ingestion and claim extraction pipeline, converting unstructured opportunity text and PDF documents into structured, machine-readable claims:
-- **Multi-Source Ingestion:** Pasted text, text-based PDF documents (via in-memory PyMuPDF), and SSRF-safe URL reference extraction.
-- **Claim Extraction Engine:** Dissects offers into verifiable, atomic claims (organisation, opportunity, financial, deadline, recruiter) with `verification_status="not_checked"`.
-- **Modular AI & Fallback Integration:** Pluggable AI extraction (Google Gemini / OpenAI-compatible models) backed by a deterministic, zero-dependency pattern recognition fallback.
-- **Suspicious Language Observation:** Extracts linguistic red flags (guaranteed selection, urgent payment demands, unauthenticated channels) as observational evidence without concluding fraud.
-- **Dynamic Frontend Dashboard:** Interactive extraction inspector with claim cards, entity breakdown tabs, confidence meters, and JSON export.
+Phase 3 introduces an independent evidence-verification layer that audits public technical signals associated with an opportunity, connects evidence to extracted claims, and displays an itemized evidence report:
+
+- **Domain Intelligence (RDAP):** Registration timestamp, registrar name, domain age calculation, and newly-registered domain risk detection ($<30$ days, $30\text{--}180$ days, $>180$ days).
+- **DNS-over-HTTPS (DoH) Intelligence:** Resolves active `A`, `AAAA`, `MX` (mail exchanger), `NS`, and `TXT`/`SPF` records via Cloudflare DoH with strict timeouts.
+- **Recruiter Email-Domain Consistency:** Compares recruiter email domains against opportunity domains and detects public consumer webmail providers (`gmail.com`, `yahoo.com`, `outlook.com`, etc.).
+- **URL & Transport Consistency:** Verifies HTTPS protocol, detects raw IP addresses in links, and checks subdomain alignment against claimed corporate websites.
+- **Strict SSRF & Injection Safety:** Submitted URLs are structurally parsed only; external target websites are **never visited or scraped**.
+- **Claim-to-Evidence Mapping:** Connects each extracted claim to relevant technical evidence artifacts. Factual claims that cannot be resolved through technical network evidence (such as salaries, stipends, and job openings) remain strictly marked `verification_status="not_checked"`.
+- **Defensible Statuses:** Strictly avoids converting indirect technical observations into confirmed fraud verdicts.
 
 ---
 
@@ -68,7 +71,7 @@ OFFERPROOF/
 │   │   │   ├── Navbar.jsx           # Header with real-time API health badge
 │   │   │   ├── Hero.jsx             # Hero section and value propositions
 │   │   │   ├── SubmissionForm.jsx   # Ingestion intake with drag & drop PDF upload
-│   │   │   ├── ExtractionResults.jsx# Claim scorecard, entity cards & JSON inspector
+│   │   │   ├── ExtractionResults.jsx# Claims scorecard, evidence cards & JSON inspector
 │   │   │   ├── HowItWorks.jsx       # 4-stage verification pipeline explanation
 │   │   │   ├── Disclaimer.jsx       # Safety, privacy, and PII protection guidance
 │   │   │   ├── Footer.jsx           # Project credits, repo links, and metadata
@@ -94,12 +97,15 @@ OFFERPROOF/
 │   │   ├── routes/
 │   │   │   ├── __init__.py          # API route registry
 │   │   │   ├── health.py            # Health check endpoint (/health)
-│   │   │   └── ingestion.py         # Ingestion & extraction endpoints (/api/v1/...)
+│   │   │   ├── ingestion.py         # Ingestion endpoints (/api/v1/ingest/...)
+│   │   │   └── verification.py      # Verification endpoints (/api/v1/verify, /api/v1/analyze)
 │   │   ├── schemas/
 │   │   │   ├── __init__.py          # Schema exports
 │   │   │   ├── health.py            # Pydantic models for health and root responses
 │   │   │   ├── ingestion.py         # Ingestion request and response models
-│   │   │   └── extraction.py        # Pydantic models for claims and entities
+│   │   │   ├── extraction.py        # Pydantic models for claims and entities
+│   │   │   ├── evidence.py          # Evidence items and technical observation models
+│   │   │   └── verification.py      # Verification request, summary, and response models
 │   │   ├── services/
 │   │   │   ├── __init__.py          # Service exports
 │   │   │   ├── health_service.py    # Service logic for health inspection
@@ -107,15 +113,25 @@ OFFERPROOF/
 │   │   │   ├── ingestion_service.py # Text sanitization and SSRF-safe URL parsing
 │   │   │   ├── fallback_extractor.py# Deterministic regex and pattern-based extractor
 │   │   │   ├── ai_service.py        # Modular AI provider abstraction (Gemini / OpenAI)
-│   │   │   └── extraction_service.py# Extraction pipeline coordinator
-│   │   ├── __init__.py              # Backend package metadata
+│   │   │   ├── extraction_service.py# Extraction pipeline coordinator
+│   │   │   ├── verification_service.py # Evidence coordinator and claim mapper
+│   │   │   └── evidence/
+│   │   │       ├── __init__.py      # Evidence provider exports
+│   │   │       ├── base.py          # BaseEvidenceProvider, hostname normalization, SSRF safety
+│   │   │       ├── domain_service.py# RDAP domain age, registrar, and status provider
+│   │   │       ├── dns_service.py   # DNS-over-HTTPS (DoH) resolver (A, MX, NS, TXT)
+│   │   │       ├── email_service.py # Recruiter email-domain alignment & webmail provider check
+│   │   │       ├── url_service.py   # URL scheme, raw IP, and domain divergence inspection
+│   │   │       └── organisation_service.py # Name-to-domain alignment & corporate registry adapter
+│   │   ├── __init__.py              # Backend package metadata (v0.3.0)
 │   │   └── main.py                  # FastAPI application entry point, CORS, and root GET /
 │   ├── tests/
-│   │   ├── test_api.py              # Automated API and CORS tests
+│   │   ├── test_api.py              # Automated API, CORS, and endpoint regression tests
 │   │   ├── test_pdf.py              # PyMuPDF extraction, size and page limit tests
 │   │   ├── test_extraction.py       # Entity, claim, and AI fallback test suite
 │   │   ├── test_ingestion.py        # Multipart PDF and text ingestion endpoint tests
-│   │   └── test_live_server.py      # Live Uvicorn server socket test
+│   │   ├── test_verification.py     # Mocked RDAP, DoH, email, URL, and claim mapping tests
+│   │   └── test_live_server.py      # Live Uvicorn server socket test across all phases
 │   ├── requirements.txt             # Backend Python dependencies
 │   └── .env.example                 # Backend environment template
 │
@@ -126,89 +142,71 @@ OFFERPROOF/
 
 ---
 
-## Phase 2 API Endpoints
+## API Endpoints
 
 | Method | Endpoint | Description |
 | :--- | :--- | :--- |
 | `GET` | `/` | Basic API information and documentation links. |
 | `GET` | `/health` | Service health status and environment metadata. |
-| `GET` | `/api/v1/health` | Versioned health reporting ingestion capabilities and active AI provider. |
+| `GET` | `/api/v1/health` | Versioned health reporting ingestion and verification engine capabilities. |
 | `POST` | `/api/v1/ingest/text` | Ingests pasted opportunity text, returns sanitized text and parsed URL hostname. |
 | `POST` | `/api/v1/ingest/pdf` | Uploads a text-based PDF (`multipart/form-data`), extracts text in-memory via PyMuPDF. |
 | `POST` | `/api/v1/extract` | Extracts structured entities, atomic claims, and suspicious language indicators. |
+| `POST` | `/api/v1/verify` | Evaluates extracted claims against independent technical evidence (RDAP, DoH, email). |
+| `POST` | `/api/v1/analyze` | Convenience endpoint executing extraction and evidence verification in a single request. |
 
 Interactive API documentation is available at `http://localhost:8000/docs` (Swagger UI) and `http://localhost:8000/redoc`.
 
 ---
 
-## AI Provider Configuration
+## Verification Status Definitions
 
-OFFERPROOF includes a pluggable AI extraction architecture with automatic deterministic fallback.
+### Claim Verification Statuses (`verification_status`)
 
-In `backend/.env`:
+- `supported`: Directly confirmed by an authoritative, trustworthy external record. (Rarely applicable for technical DNS checks alone).
+- `contradicted`: Directly refuted by hard contradictory evidence (e.g. non-routable address, malformed protocol).
+- `inconclusive`: Technical evidence exists (e.g. domain registered recently, DNS active, free email used), but does not independently establish or refute whether the opportunity is genuine.
+- `not_checked`: The claim cannot be evaluated through available technical evidence (e.g. compensation amounts, internship availability, deadlines).
 
-```ini
-# Provider options: "gemini", "openai", "none" (defaults to "none" if keys omitted)
-AI_PROVIDER=gemini
-AI_REQUEST_TIMEOUT_SECONDS=25.0
+### Evidence Item Statuses (`status`)
 
-# Option A: Google Gemini
-GEMINI_API_KEY=your_gemini_api_key_here
-GEMINI_MODEL=gemini-1.5-flash
-
-# Option B: OpenAI-Compatible (OpenAI, Groq, Ollama, DeepSeek)
-OPENAI_API_KEY=your_openai_api_key_here
-OPENAI_BASE_URL=https://api.openai.com/v1
-OPENAI_MODEL=gpt-4o-mini
-```
-
-> **Security Note:** User submissions are encapsulated within `<untrusted_opportunity_text>` delimiters to prevent prompt injection. If an AI provider is unconfigured, times out, or returns invalid schema, the system automatically falls back to `fallback_extractor.py`, marking `extraction_mode="rule_based"`.
+- `available`: The check successfully retrieved objective data from the source registry.
+- `not_available`: The external registry returned no data, timed out, or is not yet integrated.
+- `error`: The check encountered a malformed input or network failure.
+- `not_applicable`: The check was skipped because the relevant input (e.g. email address or URL) was not provided.
 
 ---
 
-## Example Extraction Response (`POST /api/v1/extract`)
+## What the System Can and Cannot Verify
+
+### What We Can Verify
+- Whether a domain name exists and when it was registered via RDAP registries.
+- Whether a hostname has active public DNS routing (`A`, `AAAA`, `NS`) and mail exchangers (`MX`).
+- Whether the recruiter's email domain matches the opportunity website or uses a consumer webmail provider (`gmail.com`, `yahoo.com`, etc.).
+- Whether an application URL uses encrypted HTTPS and whether it points to a raw IP address.
+- Whether the application URL is a subdomain of the claimed organisation's domain.
+
+### What We Cannot Verify (Strictly Retained as `not_checked`)
+- **Job/Internship Availability:** DNS routing cannot verify whether an internal job requisition exists.
+- **Compensation & Stipends:** Salaries cannot be confirmed through domain registration records.
+- **Application Fees:** Demanded registration fees cannot be verified via public technical registries.
+- **Recruiter Authorization:** An email with a matching domain name can still be spoofed without cryptographic email headers (SPF/DKIM/DMARC inspection on raw `.eml` files).
+- **Legitimacy from Age:** Older domains can be compromised; new domains may belong to legitimate startups.
+
+---
+
+## Example Verification Response (`POST /api/v1/verify`)
 
 ```json
 {
   "success": true,
-  "extraction_mode": "rule_based",
-  "source_type": "text",
-  "extracted_information": {
-    "organisation": {
-      "name": "ABC Technologies",
-      "website": null,
-      "organisation_type": "corporate_entity"
-    },
-    "opportunity": {
-      "title": "Data Science Internship",
-      "category": "internship",
-      "role": "Data Science Internship",
-      "required_qualifications": [],
-      "required_skills": [],
-      "work_arrangement": null,
-      "location": null,
-      "duration": null,
-      "application_deadline": "October 31"
-    },
-    "financial_details": {
-      "salary": null,
-      "stipend": "₹45,000 per month",
-      "registration_fees": "₹1,500",
-      "training_fees": null,
-      "processing_fees": null,
-      "other_payment_requests": []
-    },
-    "recruiter": {
-      "name": null,
-      "email": null,
-      "phone": null,
-      "contact_info": null
-    },
-    "application": {
-      "application_url": "https://abctech.example.com/apply",
-      "application_email": null,
-      "application_instructions": "Submit details via application channel."
-    }
+  "verification_summary": {
+    "total_claims": 5,
+    "supported": 0,
+    "contradicted": 0,
+    "inconclusive": 2,
+    "not_checked": 3,
+    "evidence_items": 5
   },
   "claims": [
     {
@@ -216,88 +214,100 @@ OPENAI_MODEL=gpt-4o-mini
       "claim_text": "Organisation claims to be ABC Technologies.",
       "claim_category": "organisation",
       "extracted_value": "ABC Technologies",
-      "source_text": "...selected for a Data Science Internship at ABC Technologies. Earn ₹45,000 per month...",
-      "source_position": { "start": 62, "end": 78 },
+      "source_text": "...selected for a Data Science Internship at ABC Technologies...",
       "confidence": 0.9,
-      "verification_status": "not_checked"
+      "verification_status": "inconclusive",
+      "evidence_ids": ["EVD-001", "EVD-004", "EVD-002"],
+      "verification_explanation": "Technical records exist for domain 'abctech.example.com'. However, domain existence alone does not confirm that the claimed organisation exists or that this opportunity was authorized. Authoritative corporate registries are not verified."
     },
     {
       "claim_id": "CLM-002",
-      "claim_text": "Organisation claims to offer a Data Science Internship.",
-      "claim_category": "opportunity",
-      "extracted_value": "Data Science Internship",
-      "source_text": "...Congratulations! You have been selected for a Data Science Internship at ABC Technologies...",
-      "source_position": { "start": 36, "end": 59 },
-      "confidence": 0.92,
-      "verification_status": "not_checked"
-    },
-    {
-      "claim_id": "CLM-003",
-      "claim_text": "Application has a stated deadline of October 31.",
-      "claim_category": "deadline",
-      "extracted_value": "October 31",
-      "source_text": "...Pay ₹1,500 as a registration fee before October 31. Guaranteed selection...",
-      "source_position": { "start": 139, "end": 149 },
-      "confidence": 0.88,
-      "verification_status": "not_checked"
-    },
-    {
-      "claim_id": "CLM-004",
       "claim_text": "Advertised monthly stipend is ₹45,000 per month.",
       "claim_category": "financial",
       "extracted_value": "₹45,000 per month",
-      "source_text": "...at ABC Technologies. Earn ₹45,000 per month. Pay ₹1,500 as a registration fee...",
-      "source_position": { "start": 85, "end": 102 },
+      "source_text": "...Earn ₹45,000 per month. Pay ₹1,500 as a registration fee...",
       "confidence": 0.91,
-      "verification_status": "not_checked"
+      "verification_status": "not_checked",
+      "evidence_ids": [],
+      "verification_explanation": "Advertised compensation, stipends, and requested fees cannot be verified through DNS, domain registration, or technical network evidence. Retained as not_checked pending authoritative registry or employer corroboration."
     },
     {
-      "claim_id": "CLM-005",
-      "claim_text": "Applicant is asked to pay ₹1,500 as a registration fee.",
-      "claim_category": "financial",
-      "extracted_value": "₹1,500",
-      "source_text": "...Earn ₹45,000 per month. Pay ₹1,500 as a registration fee before October 31...",
-      "source_position": { "start": 108, "end": 114 },
+      "claim_id": "CLM-003",
+      "claim_text": "Recruiter contact email is stated as recruiter@gmail.com.",
+      "claim_category": "recruiter",
+      "extracted_value": "recruiter@gmail.com",
+      "source_text": "...Contact recruiter@gmail.com...",
       "confidence": 0.95,
-      "verification_status": "not_checked"
-    },
-    {
-      "claim_id": "CLM-006",
-      "claim_text": "Message claims guaranteed selection.",
-      "claim_category": "suspicious_indicator",
-      "extracted_value": "Guaranteed selection",
-      "source_text": "...registration fee before October 31. Guaranteed selection.",
-      "source_position": { "start": 151, "end": 171 },
-      "confidence": 0.89,
-      "verification_status": "not_checked"
+      "verification_status": "inconclusive",
+      "evidence_ids": ["EVD-003"],
+      "verification_explanation": "Recruiter contact utilizes a free public webmail address rather than a verified enterprise domain. This observation indicates informal communication, but cannot confirm or refute recruiter identity on technical evidence alone."
     }
   ],
-  "suspicious_indicators": [
+  "evidence": [
     {
-      "indicator_type": "guaranteed_selection",
-      "statement": "Guaranteed selection",
-      "description": "Claims guaranteed selection, bypassing normal merit or interview evaluation.",
-      "source_quote": "...registration fee before October 31. Guaranteed selection."
+      "evidence_id": "EVD-001",
+      "evidence_type": "domain_registration",
+      "source_name": "RDAP",
+      "source_url": "https://rdap.org/domain/abctech.example.com",
+      "observed_value": "Registration: 2026-09-15 (46 days old)",
+      "interpretation": "Domain was registered relatively recently (46 days ago). This is a notable observation requiring corroboration against the claimed organisation's founding date.",
+      "retrieved_at": "2026-10-31T04:22:21Z",
+      "status": "available",
+      "limitations": [
+        "Domain registration age does not establish organisational legitimacy.",
+        "Established domains can be spoofed or compromised; new domains may represent legitimate startups."
+      ]
     },
     {
-      "indicator_type": "registration_fee_request",
-      "statement": "Pay ₹1,500 as a registration fee",
-      "description": "Requests candidate payment for registration, training, or onboarding.",
-      "source_quote": "...Earn ₹45,000 per month. Pay ₹1,500 as a registration fee before October 31..."
+      "evidence_id": "EVD-002",
+      "evidence_type": "dns_records",
+      "source_name": "DNS-over-HTTPS (Cloudflare DoH)",
+      "source_url": "https://cloudflare-dns.com/dns-query?name=abctech.example.com",
+      "observed_value": "A: 1 records (93.184.216.34); MX: 1 servers",
+      "interpretation": "Hostname 'abctech.example.com' resolves actively on public DNS with 1 mail exchanger(s).",
+      "retrieved_at": "2026-10-31T04:22:21Z",
+      "status": "available",
+      "limitations": [
+        "DNS records only demonstrate internet routing configuration; they do not establish organisational legitimacy."
+      ]
+    },
+    {
+      "evidence_id": "EVD-003",
+      "evidence_type": "email_domain_consistency",
+      "source_name": "Email Domain Analysis",
+      "source_url": null,
+      "observed_value": "Recruiter email: recruiter@gmail.com [Public Consumer Webmail]",
+      "interpretation": "Recruiter email utilizes a public consumer webmail provider (gmail.com).",
+      "retrieved_at": "2026-10-31T04:22:21Z",
+      "status": "available",
+      "limitations": [
+        "A different email domain is an observation, not proof of impersonation. Organisations may use outsourced recruitment agencies."
+      ]
     }
   ],
-  "extraction_summary": {
-    "total_claims": 6,
-    "total_entities": 4,
-    "detected_indicators": 2
-  },
-  "url_metadata": {
-    "submitted_url": "https://abctech.example.com/apply",
-    "hostname": "abctech.example.com",
-    "scheme": "https",
-    "path": "/apply"
-  },
-  "errors": null
+  "technical_observations": [
+    {
+      "observation_id": "OBS-001",
+      "category": "domain",
+      "label": "Domain age observation",
+      "finding": "recent_domain",
+      "detail": "Domain was registered relatively recently (46 days ago).",
+      "severity": "informational"
+    },
+    {
+      "observation_id": "OBS-002",
+      "category": "email",
+      "label": "Free email provider detected",
+      "finding": "free_email_provider",
+      "detail": "Recruiter uses consumer webmail provider 'gmail.com' rather than an enterprise domain.",
+      "severity": "notable"
+    }
+  ],
+  "limitations": [
+    "Technical checks evaluate domain, DNS, protocol, and email consistency. They cannot establish whether an opportunity or recruiter is genuine.",
+    "The presence of active DNS or HTTPS indicates technical network routing, NOT organisational honesty or employment legitimacy.",
+    "Authoritative government corporate registry records (e.g. SEC EDGAR, Companies House, MCA) are not queried in Phase 3; organisation incorporation remains unverified."
+  ]
 }
 ```
 
@@ -312,105 +322,29 @@ OPENAI_MODEL=gpt-4o-mini
 
 ---
 
-### 1. Clone the Repository
+### Running Automated Test Suites
+
+Execute all Phase 1, Phase 2, and Phase 3 automated test suites:
 
 ```bash
-git clone https://github.com/Sanjaycs096/OFFERPROOF.git
-cd OFFERPROOF
-```
-
----
-
-### 2. Backend Setup
-
-1. **Navigate to the backend directory:**
-   ```bash
-   cd backend
-   ```
-
-2. **Create and activate a Python virtual environment:**
-   - **On Windows (PowerShell):**
-     ```powershell
-     python -m venv .venv
-     .\.venv\Scripts\Activate.ps1
-     ```
-   - **On macOS / Linux:**
-     ```bash
-     python3 -m venv .venv
-     source .venv/bin/activate
-     ```
-
-3. **Install backend dependencies:**
-   ```bash
-   pip install -r requirements.txt
-   ```
-
-4. **Configure environment variables:**
-   ```bash
-   cp .env.example .env
-   ```
-
-5. **Start the FastAPI backend server:**
-   ```bash
-   uvicorn app.main:app --host 127.0.0.1 --port 8000 --reload
-   ```
-
----
-
-### 3. Frontend Setup
-
-1. **Open a new terminal window and navigate to the frontend directory:**
-   ```bash
-   cd frontend
-   ```
-
-2. **Install frontend npm dependencies:**
-   ```bash
-   npm install
-   ```
-
-3. **Configure environment variables:**
-   ```bash
-   cp .env.example .env
-   ```
-
-4. **Start the Vite development server:**
-   ```bash
-   npm run dev
-   ```
-
-5. **Access the application:**
-   - Open your browser at `http://localhost:5173`.
-   - The top navigation bar displays a live indicator: **`API Online (<ms>ms)`**.
-   - Paste job or offer text, or drag & drop a PDF document to extract verifiable claims.
-
----
-
-### 4. Running Backend Tests
-
-Execute all Phase 2 automated test suites:
-
-```bash
-# PDF Ingestion & Limits (Empty PDF, file size, max pages, signature)
+# PDF Ingestion & Limits
 .\backend\.venv\Scripts\python.exe backend\tests\test_pdf.py
 
 # Claim Extraction & Fallback Engine
 .\backend\.venv\Scripts\python.exe backend\tests\test_extraction.py
 
-# Ingestion API Endpoints (Multipart PDF upload, text ingestion, extraction)
+# Ingestion API Endpoints (Multipart PDF upload, text ingestion)
 .\backend\.venv\Scripts\python.exe backend\tests\test_ingestion.py
+
+# Phase 3 Evidence Verification (Mocked RDAP, DoH, Email, URL consistency)
+.\backend\.venv\Scripts\python.exe backend\tests\test_verification.py
+
+# Core API Regression & CORS Preflight Tests
+.\backend\.venv\Scripts\python.exe backend\tests\test_api.py
 
 # Live HTTP Server Socket Test
 .\backend\.venv\Scripts\python.exe backend\tests\test_live_server.py
 ```
-
----
-
-## Current Implementation Limitations (Phase 2)
-
-- **Text-Based PDFs Only:** Scanned documents or images inside PDFs require OCR capabilities which are scheduled for future enhancements; empty or image-only PDFs are detected and rejected with informative guidance.
-- **SSRF Safety:** User-submitted URLs are parsed structurally (hostname, scheme, path) for reference; automated external URL retrieval is disabled to protect against SSRF and unsafe external requests.
-- **No Independent Verification or Fraud Scoring:** All claims extracted in Phase 2 are strictly marked `verification_status="not_checked"`. Independent registry checks and risk scoring will be implemented in subsequent phases.
 
 ---
 
@@ -421,17 +355,19 @@ Execute all Phase 2 automated test suites:
   - Configure modern React + Vite frontend and asynchronous FastAPI backend.
   - Implement bidirectional health check and CORS integration.
 
-- [x] **Phase 2: Ingestion & Claim Extraction (Current)**
+- [x] **Phase 2: Ingestion & Claim Extraction**
   - Multi-source ingestion: raw text, text-based PDF parsing via in-memory PyMuPDF, and SSRF-safe URL references.
   - Atomic claim extraction engine isolating verifiable claims (`verification_status="not_checked"`).
   - Pluggable AI extraction architecture with deterministic rule-based fallback.
   - Suspicious language indicator extraction without concluding fraud.
-  - Interactive claim card dashboard and JSON export.
 
-- [ ] **Phase 3: Multi-Source Evidence Cross-Referencing**
-  - Corporate registry corroboration (SEC EDGAR, UK Companies House, OpenCorporates).
-  - Domain WHOIS & DNS MX/SPF/DKIM verification for recruiter email authenticity.
-  - Automated crawling of corporate careers portals to verify genuine requisition IDs.
+- [x] **Phase 3: Independent Evidence Verification & Source Intelligence (Current)**
+  - Domain intelligence via RDAP (registration timestamp, registrar, domain age interpretation).
+  - DNS intelligence via DNS-over-HTTPS (A, AAAA, MX, NS, TXT).
+  - Recruiter email-domain consistency and consumer webmail detection.
+  - URL transport protocol and domain divergence inspection (no external page scraping).
+  - Claim-to-evidence mapper assigning `supported`, `contradicted`, `inconclusive`, and `not_checked` states with transparent explanations.
+  - Verification results dashboard with itemized evidence cards, technical observations, and check limitations.
 
 - [ ] **Phase 4: Risk Scoring & Fraud Pattern Auditing**
   - Rule-based heuristics (upfront fee requests, disposable email domains, suspicious domain age).
