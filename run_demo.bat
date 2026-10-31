@@ -45,7 +45,7 @@ echo [OK] Python detected: %PY_VER%
 where node >nul 2>&1
 if %ERRORLEVEL% neq 0 (
     echo [ERROR] Node.js was not found in your system PATH.
-    echo Please install Node.js (v18 or higher recommended) from https://nodejs.org/
+    echo Please install Node.js - v18 or higher recommended - from https://nodejs.org/
     goto :error_exit
 )
 for /f "tokens=*" %%i in ('node --version 2^>^&1') do set "NODE_VER=%%i"
@@ -55,7 +55,7 @@ echo [OK] Node.js detected: %NODE_VER%
 where npm >nul 2>&1
 if %ERRORLEVEL% neq 0 (
     echo [ERROR] npm was not found in your system PATH.
-    echo Please install npm (included with Node.js) from https://nodejs.org/
+    echo Please install npm - included with Node.js - from https://nodejs.org/
     goto :error_exit
 )
 for /f "tokens=*" %%i in ('npm --version 2^>^&1') do set "NPM_VER=%%i"
@@ -130,7 +130,7 @@ start "OFFERPROOF - Frontend Web UI (Vite)" cmd /k "cd /d "%FRONTEND_DIR%" && np
 
 :: 3. Wait briefly for servers to initialize
 echo Waiting for servers to initialize...
-timeout /t 4 /nobreak >nul
+timeout /t 4 /nobreak >nul 2>&1
 
 :: 4. Launch Default Web Browser
 echo Opening OFFERPROOF in your default browser...
@@ -138,7 +138,7 @@ start http://localhost:5173
 
 echo.
 echo ==============================================================================
-echo                       OFFERPROOF IS NOW RUNNING!
+echo                       OFFERPROOF IS NOW RUNNING
 echo ==============================================================================
 echo.
 echo  - Frontend Dashboard:       http://localhost:5173
@@ -171,3 +171,4 @@ echo [FAILED] Unable to start OFFERPROOF demo. Please check the error messages a
 echo.
 pause
 exit /b 1
+

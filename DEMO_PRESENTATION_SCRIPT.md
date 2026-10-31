@@ -431,3 +431,4 @@ Complete this checklist 15 minutes before presenting to judges:
   - Keep a stopwatch or phone timer ready for the 3-minute limit.
 - [ ] **10. Mindset:**
   - Speak with measured confidence. Emphasize evidence, transparency, and safety over buzzwords.
+
