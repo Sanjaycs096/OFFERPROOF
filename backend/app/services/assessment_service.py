@@ -363,7 +363,8 @@ class AssessmentService:
                     severity=FindingSeverity.HIGH_CAUTION,
                     explanation=(
                         f"The announcement explicitly requests an upfront payment before proceeding: {detail_str}. "
-                        "Legitimate employers and reputable scholarship providers almost never require candidates to pay fees to secure work or onboarding."
+                        "Upfront recruitment, training, or processing fees are a significant warning sign. "
+                        "Independently confirm the request through the organisation's official channels before paying."
                     ),
                     related_claim_ids=[c.claim_id for c in fee_claims] or get_claims_by_category("financial"),
                     related_evidence_ids=[],
@@ -704,7 +705,8 @@ class AssessmentService:
             if high_severity_count >= 1:
                 summary = (
                     "High caution recommended. An upfront registration, processing, or training fee was requested. "
-                    "Legitimate employers do not charge fees to candidates. Independently verify the organization before paying or applying."
+                    "Upfront recruitment or processing fees are a significant warning sign. "
+                    "Independently confirm the request through the organisation's official channels before paying."
                 )
             else:
                 summary = (

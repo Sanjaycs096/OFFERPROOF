@@ -131,3 +131,4 @@ class AnalysisResponse(VerificationResponse):
     verified_facts: List[VerifiedFact] = Field(default_factory=list, description="Independently verified technical facts")
     unverified_claims: List[UnverifiedClaim] = Field(default_factory=list, description="Claims that remain unverified")
     next_steps: List[NextStepItem] = Field(default_factory=list, description="Actionable next steps")
+

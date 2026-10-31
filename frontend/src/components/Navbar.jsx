@@ -16,8 +16,8 @@ export default function Navbar({ healthState }) {
               <span className="text-lg font-bold tracking-tight text-white font-mono">
                 OFFER<span className="text-blue-500">PROOF</span>
               </span>
-              <span className="px-1.5 py-0.5 text-[10px] uppercase font-mono tracking-wider font-semibold rounded bg-blue-950 border border-blue-800 text-blue-300">
-                Phase 4
+              <span className="px-2 py-0.5 text-[10px] uppercase font-mono tracking-wider font-semibold rounded bg-emerald-950/80 border border-emerald-700/60 text-emerald-300">
+                v0.5.0 • Live
               </span>
             </div>
             <p className="text-[11px] text-slate-400 hidden sm:block">

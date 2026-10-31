@@ -43,8 +43,8 @@ class RecommendationService:
                     topic="payment_safety",
                     title="Do not pay any upfront registration, processing, or training fee",
                     advice=(
-                        "Legitimate employers, internship hosts, and reputable scholarship providers do not require "
-                        "candidates to pay upfront fees to secure a position or undergo onboarding. "
+                        "Upfront recruitment, registration, or processing fees are a significant warning sign. "
+                        "Reputable employers and legitimate internship hosts rarely require advance fees to secure a position. "
                         "Do not send money, gift cards, or cryptocurrency. Confirm the recruitment policy directly "
                         "on the organization's official careers portal before taking any financial action."
                     ),
@@ -177,7 +177,7 @@ class RecommendationService:
                 NextStepItem(
                     step_number=step_num,
                     action="Pause all payment workflows immediately and do not transfer funds.",
-                    rationale="Legitimate employers do not require candidates to pay application or equipment fees upfront.",
+                    rationale="Upfront recruitment fees are a recognized warning sign. Reputable programs rarely require candidates to pay advance application or equipment fees.",
                 )
             )
             step_num += 1
@@ -232,3 +232,4 @@ class RecommendationService:
 
 
 recommendation_service = RecommendationService()
+

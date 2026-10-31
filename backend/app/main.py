@@ -13,7 +13,7 @@ load_dotenv()
 app = FastAPI(
     title="OFFERPROOF API",
     description="Backend API for OFFERPROOF: Ingestion, claim extraction, independent evidence verification, and explainable safety assessments.",
-    version="0.4.0",
+    version="0.5.0",
     docs_url="/docs",
     redoc_url="/redoc",
 )
@@ -24,11 +24,12 @@ raw_origins = os.getenv(
     "http://localhost:5173,http://127.0.0.1:5173,http://localhost:3000",
 )
 allowed_origins = [origin.strip() for origin in raw_origins.split(",") if origin.strip()]
+is_wildcard = "*" in allowed_origins
 
 app.add_middleware(
     CORSMiddleware,
     allow_origins=allowed_origins,
-    allow_credentials=True,
+    allow_credentials=not is_wildcard,
     allow_methods=["*"],
     allow_headers=["*"],
 )
@@ -57,7 +58,7 @@ def root_info() -> RootResponse:
     return RootResponse(
         message="OFFERPROOF API is active and ready.",
         tagline="Don't trust the offer. Verify the evidence.",
-        version="0.4.0",
+        version="0.5.0",
         docs_url="/docs",
         health_url="/health",
     )

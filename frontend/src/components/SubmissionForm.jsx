@@ -38,20 +38,22 @@ export default function SubmissionForm({ isOnline }) {
   const resultsRef = useRef(null);
 
   const sampleDescriptions = {
+    demo: "Congratulations! You have been selected for our exclusive Machine Learning Internship at Apex Innovations. Earn ₹35,000 per month. Pay ₹1,500 as a registration and onboarding fee before the deadline. Guaranteed selection for eligible candidates. Contact recruiter at careers.apex.internship@gmail.com.",
+    internship: "Congratulations! You have been selected for our exclusive Machine Learning Internship at Apex Innovations. Earn ₹35,000 per month. Pay ₹1,500 as a registration and onboarding fee before the deadline. Guaranteed selection for eligible candidates. Contact recruiter at careers.apex.internship@gmail.com.",
     job: "Congratulations! You have been selected for a Remote Data Analyst position at Apex Technologies LLC. Salary offered: $65/hr without interview. Pay $150 as a registration fee before November 15. Guaranteed selection. Contact hr@apextechnologies.example.com.",
-    internship: "Congratulations! You have been selected for a Data Science Internship at ABC Technologies. Earn ₹45,000 per month. Pay ₹1,500 as a registration fee before October 31. Guaranteed selection.",
     scholarship: "Global STEM Leadership Fellowship claiming $10,000 grant. Non-refundable $75 application processing fee required before December 1.",
   };
 
   const handleApplySample = (type) => {
-    setOpportunityType(type);
+    setOpportunityType(type === 'demo' ? 'internship' : type);
     setDescription(sampleDescriptions[type]);
     setSelectedFile(null);
     setFileError('');
     setErrorMessage('');
-    if (type === 'job') setOpportunityUrl('https://apextechnologies.example.com/apply/9843');
-    if (type === 'internship') setOpportunityUrl('https://abctech.example.com/apply');
-    if (type === 'scholarship') setOpportunityUrl('https://stem-fellowship.example.org/apply');
+    if (type === 'demo') setOpportunityUrl('https://apex-innovations-apply.example.com/portal/982');
+    else if (type === 'job') setOpportunityUrl('https://apextechnologies.example.com/apply/9843');
+    else if (type === 'internship') setOpportunityUrl('https://apex-innovations-apply.example.com/apply');
+    else if (type === 'scholarship') setOpportunityUrl('https://stem-fellowship.example.org/apply');
   };
 
   const validateAndSetFile = (file) => {
@@ -239,8 +241,8 @@ export default function SubmissionForm({ isOnline }) {
               <span className="text-xs font-mono uppercase tracking-wider text-blue-400 font-semibold">
                 Opportunity Ingestion
               </span>
-              <span className="px-2 py-0.5 rounded text-[10px] uppercase font-mono font-bold bg-blue-950 border border-blue-800 text-blue-300">
-                Phase 4 Assessment Engine
+              <span className="px-2 py-0.5 rounded text-[10px] uppercase font-mono font-bold bg-emerald-950/80 border border-emerald-700/60 text-emerald-300">
+                Evidence Engine Active
               </span>
             </div>
             <h2 className="text-2xl sm:text-3xl font-bold text-white mt-1">
@@ -252,24 +254,26 @@ export default function SubmissionForm({ isOnline }) {
           </div>
 
           {/* Quick preset selector */}
-          <div className="mt-4 sm:mt-0 flex items-center gap-2 text-xs">
-            <span className="text-slate-400 flex items-center gap-1">
+          <div className="mt-4 sm:mt-0 flex items-center gap-1.5 flex-wrap text-xs">
+            <span className="text-slate-400 flex items-center gap-1 mr-1">
               <Sparkles className="w-3.5 h-3.5 text-blue-400" />
-              Load sample:
+              Demo Samples:
             </span>
+            <button
+              type="button"
+              onClick={() => handleApplySample('demo')}
+              className="px-2.5 py-1 rounded bg-blue-950 hover:bg-blue-900 text-blue-300 font-semibold border border-blue-700/80 transition-colors flex items-center gap-1 shadow-sm"
+              title="Load the official hackathon demonstration sample (Apex Innovations)"
+            >
+              <Sparkles className="w-3 h-3 text-blue-400" />
+              <span>Demo Walkthrough</span>
+            </button>
             <button
               type="button"
               onClick={() => handleApplySample('job')}
               className="px-2 py-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 transition-colors"
             >
               Job
-            </button>
-            <button
-              type="button"
-              onClick={() => handleApplySample('internship')}
-              className="px-2 py-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 transition-colors"
-            >
-              Internship
             </button>
             <button
               type="button"

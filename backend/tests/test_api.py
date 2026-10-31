@@ -23,7 +23,7 @@ async def run_tests():
         assert root_data["tagline"] == "Don't trust the offer. Verify the evidence."
         assert root_data["health_url"] == "/health"
         assert root_data["docs_url"] == "/docs"
-        assert root_data["version"] == "0.4.0"
+        assert root_data["version"] == "0.5.0"
 
         # Test Health Endpoint
         res_health = await client.get("/health")
@@ -33,7 +33,7 @@ async def run_tests():
         health_data = res_health.json()
         assert health_data["status"] == "ok"
         assert health_data["service"] == "offerproof-api"
-        assert health_data["version"] == "0.4.0"
+        assert health_data["version"] == "0.5.0"
         assert "timestamp" in health_data
 
         # Test CORS Preflight

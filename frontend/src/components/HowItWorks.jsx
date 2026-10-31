@@ -40,7 +40,7 @@ export default function HowItWorks() {
       description:
         'Generates an objective, transparent scorecard detailing verified facts, unconfirmed claims, identified risks, and recommended next steps.',
       icon: FileCheck,
-      details: ['Itemized evidence citations', 'Confidence & risk index', 'Actionable candidate advice'],
+      details: ['Itemized evidence citations', 'Deterministic guidance categories', 'Actionable candidate checklist'],
     },
   ];
 
